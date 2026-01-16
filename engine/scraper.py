@@ -19,7 +19,12 @@ class Scraper:
                 print("File to open has not been found!")
 
         else:
-            html_file = requests.get(self.wiki_url).text
+            response = requests.get(self.wiki_url)
+            if response.ok:
+                html_file = requests.get(self.wiki_url).text
+            else:
+                # now we can be sure that if Scraper exists, it has properly loaded webpage
+                raise ValueError(f"Artykuł '{self.phrase}' nie istnieje na wiki.")
 
         soup = BeautifulSoup(html_file, 'html.parser')
         self.data = soup
@@ -35,5 +40,19 @@ class Scraper:
         self.get_url()
         self.scrape()
 
+
+
+    def summary(self):
+        content_div = self.data.find('div', class_='mw-content-ltr')
+        if content_div is not None:
+            first_paragraph = content_div.find('p')
+
+            if first_paragraph is not None:
+                text = first_paragraph.get_text(strip=True)
+                print(text)
+            else:
+                print("No paragraph has been found")
+        else:
+            print("No text container has been found")
 
 
