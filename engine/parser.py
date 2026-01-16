@@ -6,10 +6,6 @@ def read_arg(input_data):
 
     return input_data["args"][input_data["counter"] - 1]
 
-
-
-
-
 def look_for_arg(input_data, arg):
     if input_data["counter"] < len(input_data["args"]) and input_data["args"][input_data["counter"]] == arg:
         input_data["counter"] += 1  # skip the --arg
@@ -80,10 +76,4 @@ def parse_input(input_args):
             return_dict["auto-count"] = auto_count_dict
 
     return return_dict
-
-
-
-
-if __name__ == "__main__":
-    parse_input(sys.argv)
 
