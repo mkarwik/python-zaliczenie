@@ -1,4 +1,4 @@
-from engine.wiki_scraper import parse_input
+from engine.parser import parse_input
 
 #Parsing test
 input_data = ['/home/jarek/PycharmProjects/Zaliczenie/parsing_test.py',
