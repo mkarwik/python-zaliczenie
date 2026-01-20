@@ -1,6 +1,9 @@
 from bs4 import BeautifulSoup
 import requests
+from collections import Counter
 import pandas as pd
+import os
+import json
 
 
 class Scraper:
@@ -113,3 +116,28 @@ class Scraper:
             print("\nBrak wartości do zliczenia (wszystkie komórki były puste).")
 
         return
+
+    def count_words(self):
+        json_path = "./word-counts.json"
+
+        content_div = self.data.find('div', class_='mw-content-ltr')
+        if content_div is None:
+            raise ValueError("Nie znaleziono treści artykułu.")
+
+        text = content_div.get_text(" ", strip=True)
+        words = text.lower().split()
+
+        current_counts = Counter(words)
+
+        if os.path.exists(json_path):
+            with open(json_path, 'r', encoding='utf-8') as file:
+                total_counts = Counter(json.load(file))
+        else:
+            total_counts = Counter()
+
+        total_counts.update(current_counts)
+
+        with open(json_path, 'w', encoding='utf-8') as file:
+            json.dump(total_counts, file)
+
+        print(f"Liczba unikalnych słów w tym artykule: {len(current_counts)}")
