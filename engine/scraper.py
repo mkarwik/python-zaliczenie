@@ -2,8 +2,12 @@ from bs4 import BeautifulSoup
 import requests
 from collections import Counter
 import pandas as pd
+import numpy as np
 import os
 import json
+import matplotlib.pyplot as plt
+import wordfreq as wfq
+from operator import itemgetter
 
 
 class Scraper:
@@ -141,3 +145,75 @@ class Scraper:
             json.dump(total_counts, file)
 
         print(f"Liczba unikalnych słów w tym artykule: {len(current_counts)}")
+
+    def analyze_relative_freq(self, mode, n,  chart,  file_dir):
+        self.count_words()
+        with open('word-counts.json', 'r') as plik:
+            article_freq = json.load(plik)
+            article_length = sum(article_freq.values())
+
+        if mode == "language":
+            top_words = wfq.top_n_list('en', n, 'small', False)
+            words_in_lang = [article_length * wfq.word_frequency(top_word, 'en') for top_word in top_words]
+            words_in_article = [article_freq.get(top_word, 0) for top_word in top_words]
+
+            df = pd.DataFrame({
+                "Słowo" : top_words,
+                "Częstosliwość w języku" : words_in_lang,
+                "Częstosliwość w Wiki" : words_in_article,
+            })
+            print(df)
+            if chart:
+                bar_width = 0.3
+
+                # Ustaw pozycję słupka na osi X
+                r1 = np.arange(len(words_in_lang))
+                r2 = [x + bar_width for x in r1]
+
+                # Narysuj słupki dla obu grup
+                plt.bar(r1, words_in_lang, color='blue', width=bar_width, edgecolor='grey', label='Słowa w j. angielskim')
+                plt.bar(r2, words_in_article, color='red', width=bar_width, edgecolor='grey', label='Słowa w Wiki')
+
+                # Dodaj etykiety, tytuł i legendę
+                plt.xlabel('Słowa', fontweight='bold')
+                plt.xticks([r + 0.5 * bar_width for r in range(len(words_in_lang))], top_words)
+                plt.ylabel('Wystąpienia')
+                plt.title('Porównanie wystąpień słów ')
+                plt.legend()
+                if file_dir:
+                    plt.savefig(file_dir)
+                plt.show()
+
+        elif mode == 'article':
+            article_sorted = dict(Counter(article_freq).most_common(n))
+            words = article_sorted.keys()
+
+            words_article_freq = article_sorted.values()
+            words_language_freq = [article_length * wfq.word_frequency(word, 'en', 'small') for word in words]
+
+            df = pd.DataFrame({
+                "Słowo": words,
+                "Częstosliwość w języku": words_language_freq,
+                "Częstosliwość w Wiki": words_article_freq,
+            })
+            print(df)
+
+            if chart:
+                bar_width = 0.3
+                r1 = np.arange(len(words_article_freq))
+                r2 = [x + bar_width for x in r1]
+
+                # Narysuj słupki dla obu grup
+                plt.bar(r1, words_language_freq, color='blue', width=bar_width, edgecolor='grey', label='Słowa w j. angielskim')
+                plt.bar(r2, words_article_freq, color='red', width=bar_width, edgecolor='grey', label='Słowa w Wiki')
+
+                # Dodaj etykiety, tytuł i legendę
+                plt.xlabel('Słowa', fontweight='bold')
+                plt.xticks([r + 0.5 * bar_width for r in range(len(words_language_freq))], words)
+                plt.ylabel('Wystąpienia')
+                plt.title('Porównanie wystąpień słów ')
+                plt.legend()
+                if file_dir:
+                    plt.savefig(file_dir)
+                plt.show()
+
