@@ -5,6 +5,8 @@ import pandas as pd
 import numpy as np
 import os
 import json
+import time
+from collections import deque
 import matplotlib.pyplot as plt
 import wordfreq as wfq
 from operator import itemgetter
@@ -16,7 +18,7 @@ class Scraper:
             return
 
         self.phrase = self.phrase.replace(" ", "_")
-        self.wiki_url = self.wiki_url + self.phrase
+        self.article_url = self.wiki_url + self.phrase
 
     def scrape(self):
         html_file = None
@@ -28,9 +30,9 @@ class Scraper:
                 print("File to open has not been found!")
 
         else:
-            response = requests.get(self.wiki_url)
+            response = requests.get(self.article_url)
             if response.ok:
-                html_file = requests.get(self.wiki_url).text
+                html_file = requests.get(self.article_url).text
             else:
                 # now we can be sure that if Scraper exists, it has properly loaded webpage
                 raise ValueError(f"Artykuł '{self.phrase}' nie istnieje na wiki.")
@@ -41,6 +43,7 @@ class Scraper:
 
     def __init__(self, use_local_file_instead=False, wiki_url=None, phrase=None, local_file_path=None):
         self.wiki_url = wiki_url
+        self.article_url = wiki_url
         self.phrase = phrase
         self.use_local_file_instead = use_local_file_instead
         self.local_file_path = local_file_path
@@ -217,3 +220,29 @@ class Scraper:
                     plt.savefig(file_dir)
                 plt.show()
 
+    def auto_count_words(self, initial_phrase, max_depth, wait_time):
+        queue = deque([(initial_phrase, 0)])
+        visited = {initial_phrase}
+
+        while queue:
+            current_phrase, current_depth = queue.popleft()
+            print(f"Przetwarzanie frazy: {current_phrase}")
+
+            new_scraper = Scraper(False, self.wiki_url, current_phrase)
+            new_scraper.count_words()
+
+            if current_depth < max_depth:
+                content_div = new_scraper.data.find('div', class_='mw-content-ltr')
+                if content_div is not None:
+                    links = content_div.find_all('a', href=True)
+                    #search by BFS
+                    for link in links:
+                        href = link['href']
+                        if href.startswith('/wiki/') and ':' not in href:
+                            next_phrase = href.replace('/wiki/', '')
+                            if next_phrase not in visited:
+                                visited.add(next_phrase)
+                                queue.append((next_phrase, current_depth + 1))
+                time.sleep(wait_time)
+            else:
+                return

@@ -7,5 +7,5 @@ local_file_path = 'strona.html'
 scraper_online = Scraper(False, wiki_url, phrase)
 print(scraper_online.data.prettify())
 
-scraper_local = Scraper(True, local_file_path=local_file_path)
-print(scraper_local.data.prettify())
+#scraper_local = Scraper(True, local_file_path=local_file_path)
+#print(scraper_local.data.prettify())
