@@ -67,7 +67,6 @@ class Scraper:
             print("No text container has been found")
 
     def table(self, n, first_row_is_header=False):
-
         tables = self.data.find_all('table')
         if not tables:
             print("Na stronie nie znaleziono żadnej tabeli.")
