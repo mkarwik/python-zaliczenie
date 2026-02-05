@@ -128,7 +128,9 @@ class Scraper:
         return
 
     def count_words(self):
-        json_path = "./word-counts.json"
+        current_file_path = os.path.dirname(os.path.abspath(__file__))
+        project_root = os.path.dirname(current_file_path)
+        json_path = os.path.join(project_root, 'word-counts.json')
 
         content_div = self.data.find('div', class_='mw-content-ltr')
         if content_div is None:
