@@ -23,7 +23,8 @@ def parse_input(input_args):
         "table" : None,
         "count-words" : None,
         "anal-relat-word-freq" : None,
-        "auto-count" : None
+        "auto-count" : None,
+        "auto-count-words" : None
     }
 
     while input_data["counter"] < len(input_args):
@@ -53,12 +54,17 @@ def parse_input(input_args):
         elif new_arg == "--analyze-relative-word-frequency":
             anal_relative_freq_dict = {
                 "mode" : None,
-                "chart" : None
+                "count" : None,
+                "chart" : None,
+                "directory" : None
             }
             if look_for_arg(input_data, '--mode'):
                 anal_relative_freq_dict["mode"] = read_arg(input_data)
+            if look_for_arg(input_data, '--count'):
+                anal_relative_freq_dict["count"] = read_arg(input_data)
             if look_for_arg(input_data, '--chart'):
-                anal_relative_freq_dict["chart"] = read_arg(input_data)
+                anal_relative_freq_dict["chart"] = True
+                anal_relative_freq_dict["directory"] = read_arg(input_data)
 
             return_dict["anal-relat-word-freq"] = anal_relative_freq_dict
 

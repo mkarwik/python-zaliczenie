@@ -1,7 +1,7 @@
 import parser
 import sys
 
-from engine.supervisor import Supervisor
+from supervisor import Supervisor
 wiki = 'https://bulbapedia.bulbagarden.net/wiki/'
 
 if __name__ == "__main__":

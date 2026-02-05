@@ -28,6 +28,7 @@ class Scraper:
                     html_file = file.read()
             except FileNotFoundError:
                 print("File to open has not been found!")
+                return
 
         else:
             response = requests.get(self.article_url)
@@ -35,7 +36,8 @@ class Scraper:
                 html_file = requests.get(self.article_url).text
             else:
                 # now we can be sure that if Scraper exists, it has properly loaded webpage
-                raise ValueError(f"Artykuł '{self.phrase}' nie istnieje na wiki.")
+                print(f"Artykuł '{self.phrase}' nie istnieje na wiki.")
+                return
 
         soup = BeautifulSoup(html_file, 'html.parser')
         self.data = soup
@@ -49,8 +51,9 @@ class Scraper:
         self.local_file_path = local_file_path
         self.data = None
 
-        self.get_url()
-        self.scrape()
+        if phrase or use_local_file_instead:
+            self.get_url()
+            self.scrape()
 
 
     def summary(self):
@@ -67,16 +70,17 @@ class Scraper:
             print("No text container has been found")
 
     def table(self, n, first_row_is_header=False):
+        table_n = int(n)
         tables = self.data.find_all('table')
         if not tables:
             print("Na stronie nie znaleziono żadnej tabeli.")
             return
 
-        if n > len(tables):
+        if table_n > len(tables):
             print("Nie ma tyle tabel na stronie")
             return
 
-        table = tables[n - 1]
+        table = tables[table_n - 1]
 
         # zbuduj listę wierszy jako list list tekstów komórek
         rows = table.find_all('tr')
@@ -128,8 +132,8 @@ class Scraper:
 
         content_div = self.data.find('div', class_='mw-content-ltr')
         if content_div is None:
-            raise ValueError("Nie znaleziono treści artykułu.")
-
+            print("Nie znaleziono treści artykułu.")
+            return
         text = content_div.get_text(" ", strip=True)
         words = text.lower().split()
 
@@ -148,8 +152,9 @@ class Scraper:
 
         print(f"Liczba unikalnych słów w tym artykule: {len(current_counts)}")
 
-    def analyze_relative_freq(self, mode, n,  chart,  file_dir):
-        self.count_words()
+    def analyze_relative_freq(self, mode, n_words,  chart,  file_dir):
+        #self.count_words()
+        n = int(n_words)
         with open('word-counts.json', 'r') as plik:
             article_freq = json.load(plik)
             article_length = sum(article_freq.values())
@@ -219,9 +224,11 @@ class Scraper:
                     plt.savefig(file_dir)
                 plt.show()
 
-    def auto_count_words(self, initial_phrase, max_depth, wait_time):
+    def auto_count_words(self, initial_phrase, max_depth_str, wait_time_str):
         queue = deque([(initial_phrase, 0)])
         visited = {initial_phrase}
+        max_depth = int(max_depth_str)
+        wait_time = int(wait_time_str)
 
         while queue:
             current_phrase, current_depth = queue.popleft()
