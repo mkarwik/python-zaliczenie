@@ -12,6 +12,11 @@ import wordfreq as wfq
 from operator import itemgetter
 
 
+def is_a_wiki_link(href):
+    if href.startswith('/wiki/') and ':' not in href:
+        return True
+    return False
+
 class Scraper:
     def get_url(self):
         if self.use_local_file_instead:
@@ -26,7 +31,7 @@ class Scraper:
             try:
                 with open(self.local_file_path, 'r') as file:
                     html_file = file.read()
-            except FileNotFoundError:
+            except:
                 print("File to open has not been found!")
                 return
 
@@ -124,7 +129,6 @@ class Scraper:
             print(counts.to_string())
         else:
             print("\nBrak wartości do zliczenia (wszystkie komórki były puste).")
-
         return
 
     def count_words(self):
@@ -227,6 +231,7 @@ class Scraper:
                 plt.show()
 
     def auto_count_words(self, initial_phrase, max_depth_str, wait_time_str):
+
         queue = deque([(initial_phrase, 0)])
         visited = {initial_phrase}
         max_depth = int(max_depth_str)
@@ -237,16 +242,20 @@ class Scraper:
             print(f"Przetwarzanie frazy: {current_phrase}")
 
             new_scraper = Scraper(False, self.wiki_url, current_phrase)
+            if new_scraper.data is None:
+                print("Nie udało się pobrać danych. Wykonywanie count-words przerwano")
+                return
             new_scraper.count_words()
 
             if current_depth < max_depth:
                 content_div = new_scraper.data.find('div', class_='mw-content-ltr')
                 if content_div is not None:
                     links = content_div.find_all('a', href=True)
+
                     #search by BFS
                     for link in links:
                         href = link['href']
-                        if href.startswith('/wiki/') and ':' not in href:
+                        if is_a_wiki_link(href):
                             next_phrase = href.replace('/wiki/', '')
                             if next_phrase not in visited:
                                 visited.add(next_phrase)

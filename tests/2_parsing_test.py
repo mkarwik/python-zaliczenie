@@ -11,4 +11,4 @@ def test_parsing():
     assert parsed_input["table"]["number"] == '5'
     assert parsed_input["anal-relat-word-freq"]["mode"] == "article"
     assert parsed_input["anal-relat-word-freq"]["count"] == "3"
-    assert parsed_input["auto-count"] == None
+    assert parsed_input["auto-count"] is None
