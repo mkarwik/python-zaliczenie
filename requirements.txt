@@ -1,0 +1,7 @@
+pytest~=9.0.2
+requests~=2.32.5
+pandas~=2.3.3
+numpy~=2.2.6
+matplotlib~=3.10.8
+wordfreq~=3.1.1
+beautifulsoup4~=4.14.3
