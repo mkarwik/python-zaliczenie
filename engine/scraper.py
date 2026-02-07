@@ -9,7 +9,6 @@ import time
 from collections import deque
 import matplotlib.pyplot as plt
 import wordfreq as wfq
-from operator import itemgetter
 
 
 def is_a_wiki_link(href):
@@ -28,10 +27,10 @@ class Scraper:
     def scrape(self):
         html_file = None
         if self.use_local_file_instead:
-            try:
+            if os.path.exists(self.local_file_path):
                 with open(self.local_file_path, 'r') as file:
                     html_file = file.read()
-            except:
+            else:
                 print("File to open has not been found!")
                 return
 
@@ -47,7 +46,6 @@ class Scraper:
         soup = BeautifulSoup(html_file, 'html.parser')
         self.data = soup
 
-
     def __init__(self, use_local_file_instead=False, wiki_url=None, phrase=None, local_file_path=None):
         self.wiki_url = wiki_url
         self.article_url = wiki_url
@@ -60,8 +58,11 @@ class Scraper:
             self.get_url()
             self.scrape()
 
-
     def summary(self):
+        if self.data is None:
+            print("Nie da się zrobić summary, wczytaj poprawnie stronę!")
+            return
+
         content_div = self.data.find('div', class_='mw-content-ltr')
         if content_div is not None:
             first_paragraph = content_div.find('p')
@@ -87,7 +88,7 @@ class Scraper:
 
         table = tables[table_n - 1]
 
-        # zbuduj listę wierszy jako list list tekstów komórek
+        # zbuduj listę wierszy jako lista list tekstów komórek
         rows = table.find_all('tr')
         parsed_rows = []
         for tr in rows:
@@ -118,7 +119,7 @@ class Scraper:
             cols = [f"col_{i}" for i in range(1, max_cols + 1)]
             df = pd.DataFrame([r for r in parsed_rows], columns=cols)
 
-        filename = f"{self.phrase}.csv"
+            filename = f"{self.phrase}.csv"
         df.to_csv(filename)
 
         flat_values = df.reset_index().values.flatten()
@@ -161,7 +162,16 @@ class Scraper:
     def analyze_relative_freq(self, mode, n_words,  chart,  file_dir):
         #self.count_words()
         n = int(n_words)
-        with open('word-counts.json', 'r') as plik:
+
+        current_file_path = os.path.dirname(os.path.abspath(__file__))
+        project_root = os.path.dirname(current_file_path)
+        json_path = os.path.join(project_root, 'word-counts.json')
+
+        if not os.path.exists(json_path):
+            print ("Wykonaj operację count-words, aby wyświetlić wykres")
+            return
+
+        with open(json_path, 'r') as plik:
             article_freq = json.load(plik)
             article_length = sum(article_freq.values())
 
@@ -172,8 +182,8 @@ class Scraper:
 
             df = pd.DataFrame({
                 "Słowo" : top_words,
-                "Częstosliwość w języku" : words_in_lang,
-                "Częstosliwość w Wiki" : words_in_article,
+                "Częstotliwość w języku" : words_in_lang,
+                "Częstotliwość w Wiki" : words_in_article,
             })
             print(df)
             if chart:

@@ -11,10 +11,8 @@ local_file_path = os.path.join(current_dir, 'strona.html')
 def test_online_scraping():
     scraper_online = Scraper(False, wiki_url, phrase)
     assert(scraper_online.data.title.text == 'Team Rocket - Bulbapedia, the community-driven Pokémon encyclopedia')
-    print("Test online passed")
 
 def test_local_scraping():
     scraper_local = Scraper(True, local_file_path=local_file_path)
-    print(scraper_local.data.title.text)
     assert (scraper_local.data.title.text == 'Team Rocket - Bulbapedia, the community-driven Pokémon encyclopedia')
 
